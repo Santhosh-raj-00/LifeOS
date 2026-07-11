@@ -72,6 +72,7 @@ lifeos/
    ```
 2. If your database password/username is not the default `root` with an empty password, modify the credentials in `backend/src/main/resources/application.properties`.
 
+
 #### Step 2: Run Backend
 1. Navigate to the `backend/` folder.
 2. Compile and run the Spring Boot application using Maven:
@@ -144,3 +145,4 @@ All endpoints require JWT authorization header `Authorization: Bearer <token>` e
 * `GET /api/profile` - Streaks, join date, achievements.
 * `PUT /api/profile` - Edit user information.
 * `PUT /api/profile/password` - Change password.
+
