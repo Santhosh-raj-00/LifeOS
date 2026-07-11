@@ -1,0 +1,15 @@
+package com.lifeos.repository;
+
+import com.lifeos.model.JournalEntry;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long> {
+    Optional<JournalEntry> findByUserIdAndDate(Long userId, LocalDate date);
+    List<JournalEntry> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+}
