@@ -3,8 +3,9 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { 
   User, Mail, Phone, Calendar, Flame, Award, 
-  Key, ShieldAlert, Sparkles, CheckSquare2, Star
+  Key, ShieldAlert, Sparkles, CheckSquare2, Star, BookOpen
 } from 'lucide-react';
+import JournalCalendarModal from '../components/JournalCalendarModal';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -12,6 +13,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
 
   // Edit fields
   const [name, setName] = useState('');
@@ -164,6 +166,28 @@ const Profile = () => {
                 </div>
               )}
             </div>
+
+            {/* Daily Journal Archive Card */}
+            <div className="bg-gradient-to-br from-indigo-900/90 to-slate-900 p-6 rounded-2xl border border-indigo-500/20 text-white shadow-lg flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
+                  <BookOpen className="w-4 h-4" />
+                  <span>Journal Archive</span>
+                </div>
+                <h4 className="text-lg font-extrabold mb-1">Daily Reflection Calendar</h4>
+                <p className="text-xs text-indigo-200/80 mb-5 leading-relaxed">
+                  Browse all your saved day-by-day journal entries, review past reflections, and download entries as PDF files.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsJournalModalOpen(true)}
+                className="w-full py-2.5 px-4 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+              >
+                <Calendar className="w-4 h-4" />
+                View Journal Calendar & PDFs
+              </button>
+            </div>
           </div>
 
           {/* Right: Update profile and update password */}
@@ -301,6 +325,12 @@ const Profile = () => {
           </div>
         </div>
       )}
+
+      <JournalCalendarModal
+        isOpen={isJournalModalOpen}
+        onClose={() => setIsJournalModalOpen(false)}
+        userName={profile?.name || user?.name || 'User'}
+      />
     </div>
   );
 };

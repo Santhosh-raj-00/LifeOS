@@ -5,6 +5,13 @@ import { Plus, Trash2, Calendar, Clock, AlertCircle, Info } from 'lucide-react';
 const Categories = ['HEALTH', 'CODING', 'CAREER', 'FAMILY', 'STUDY', 'PERSONAL', 'OTHER'];
 const RepeatTypes = ['NONE', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'];
 
+const formatLocalDate = (d = new Date()) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dayVal = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dayVal}`;
+};
+
 const Schedules = () => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +25,7 @@ const Schedules = () => {
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [repeatType, setRepeatType] = useState('DAILY');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(formatLocalDate());
   const [day, setDay] = useState(''); // day of week or day of month
 
   const fetchSchedules = async () => {
@@ -59,16 +66,19 @@ const Schedules = () => {
         repeatType,
       };
 
+      const targetDateObj = new Date(date + 'T00:00:00');
+      const jsDay = targetDateObj.getDay();
+      const isoDay = jsDay === 0 ? 7 : jsDay;
+
       if (repeatType === 'NONE') {
         payload.date = date;
       } else if (repeatType === 'WEEKLY') {
-        payload.day = day ? parseInt(day) : new Date(date).getDay() || 7; // default 1-7
+        payload.day = day ? parseInt(day) : isoDay;
       } else if (repeatType === 'MONTHLY') {
-        payload.day = day ? parseInt(day) : new Date(date).getDate();
+        payload.day = day ? parseInt(day) : targetDateObj.getDate();
       } else if (repeatType === 'YEARLY') {
-        const d = new Date(date);
-        payload.day = d.getDate();
-        payload.month = d.getMonth() + 1;
+        payload.day = targetDateObj.getDate();
+        payload.month = targetDateObj.getMonth() + 1;
       }
 
       await axios.post('/api/schedules', payload);

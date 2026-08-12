@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -38,7 +39,7 @@ public class TaskController {
         
         User user = getAuthenticatedUser();
         LocalDate targetDate = date != null ? date : LocalDate.now();
-        List<TaskLog> tasks = taskService.getTasksForDate(user.getId(), targetDate);
+        List<TaskLog> tasks = taskService.getTasksForDate(Objects.requireNonNull(user.getId()), targetDate);
         return ResponseEntity.ok(tasks);
     }
 
@@ -46,7 +47,7 @@ public class TaskController {
     public ResponseEntity<?> completeTask(@PathVariable Long id) {
         try {
             User user = getAuthenticatedUser();
-            TaskLog completed = taskService.completeTask(id, user.getId());
+            TaskLog completed = taskService.completeTask(Objects.requireNonNull(id), Objects.requireNonNull(user.getId()));
             return ResponseEntity.ok(completed);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

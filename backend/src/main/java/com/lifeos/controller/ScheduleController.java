@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/schedules")
@@ -43,7 +44,7 @@ public class ScheduleController {
     @GetMapping
     public ResponseEntity<List<Schedule>> getSchedules() {
         User user = getAuthenticatedUser();
-        List<Schedule> schedules = scheduleService.getSchedulesByUser(user.getId());
+        List<Schedule> schedules = scheduleService.getSchedulesByUser(Objects.requireNonNull(user.getId()));
         return ResponseEntity.ok(schedules);
     }
 
@@ -51,7 +52,7 @@ public class ScheduleController {
     public ResponseEntity<?> deleteSchedule(@PathVariable Long id) {
         try {
             User user = getAuthenticatedUser();
-            scheduleService.deleteSchedule(id, user.getId());
+            scheduleService.deleteSchedule(Objects.requireNonNull(id), Objects.requireNonNull(user.getId()));
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

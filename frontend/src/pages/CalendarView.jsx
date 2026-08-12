@@ -20,10 +20,17 @@ const CalendarView = () => {
     percentage: 0
   });
 
+  const formatLocalDate = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayVal = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dayVal}`;
+  };
+
   // Fetch daily details when selected date changes
   const fetchDailyDetails = async (dateObj) => {
     setLoading(true);
-    const dateStr = dateObj.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(dateObj);
     try {
       // Fetch tasks for chosen date
       const tasksRes = await axios.get(`/api/tasks?date=${dateStr}`);

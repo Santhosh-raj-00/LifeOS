@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -57,7 +58,7 @@ public class TaskService {
                         log.setStatus(TaskStatus.MISSED);
                         log.setLocked(true);
                         log.setMissedAt(LocalDateTime.of(date, schedule.getEndTime()));
-                        log = taskLogRepository.save(log);
+                        log = taskLogRepository.save(Objects.requireNonNull(log));
                     }
                 }
             } else {
@@ -86,7 +87,7 @@ public class TaskService {
                         .missedAt(missedAt)
                         .build();
                 
-                log = taskLogRepository.save(log);
+                log = taskLogRepository.save(Objects.requireNonNull(log));
             }
             taskLogs.add(log);
         }
@@ -98,7 +99,7 @@ public class TaskService {
 
     @Transactional
     public TaskLog completeTask(Long taskLogId, Long userId) {
-        TaskLog log = taskLogRepository.findById(taskLogId)
+        TaskLog log = taskLogRepository.findById(Objects.requireNonNull(taskLogId))
                 .orElseThrow(() -> new IllegalArgumentException("Task log not found"));
 
         if (!log.getSchedule().getUser().getId().equals(userId)) {
@@ -133,7 +134,7 @@ public class TaskService {
             log.setStatus(TaskStatus.MISSED);
             log.setLocked(true);
             log.setMissedAt(LocalDateTime.of(today, endTime));
-            taskLogRepository.save(log);
+            taskLogRepository.save(Objects.requireNonNull(log));
             throw new IllegalStateException("Time window has expired. Task is now MISSED and locked");
         }
 
@@ -141,17 +142,10 @@ public class TaskService {
         log.setStatus(TaskStatus.COMPLETED);
         log.setCompletedAt(LocalDateTime.now());
         
-        // Locked after end time, but can we lock immediately upon completion?
-        // "Completed task: Cannot be changed after end time."
-        // So we don't set locked = true immediately, but we prevent toggle-off or change after end time.
-        // Actually, to make it secure, if they complete it, we allow it to stay completed. If they try to undo it,
-        // we can allow undo ONLY if they are still within the time window.
-        // Let's implement that: locked is set to true once end time has passed.
-        
-        log = taskLogRepository.save(log);
+        log = taskLogRepository.save(Objects.requireNonNull(log));
 
         // Update user stats, XP, level, and streaks
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(Objects.requireNonNull(userId)).orElseThrow();
         streakService.handleTaskCompletion(user);
 
         return log;

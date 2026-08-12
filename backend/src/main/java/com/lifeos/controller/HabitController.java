@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/habits")
@@ -56,7 +57,7 @@ public class HabitController {
     public ResponseEntity<?> deleteHabit(@PathVariable Long id) {
         try {
             User user = getAuthenticatedUser();
-            habitService.deleteHabit(id, user.getId());
+            habitService.deleteHabit(Objects.requireNonNull(id), user.getId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -83,7 +84,7 @@ public class HabitController {
         try {
             User user = getAuthenticatedUser();
             LocalDate targetDate = date != null ? date : LocalDate.now();
-            HabitLog log = habitService.logHabit(id, targetDate, status, user.getId());
+            HabitLog log = habitService.logHabit(Objects.requireNonNull(id), targetDate, status, user.getId());
             return ResponseEntity.ok(log);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

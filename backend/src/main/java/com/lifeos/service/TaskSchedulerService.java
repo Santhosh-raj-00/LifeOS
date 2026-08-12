@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TaskSchedulerService {
@@ -39,8 +41,7 @@ public class TaskSchedulerService {
                 TaskStatus.PENDING, today, false
         );
 
-        boolean streakUpdateNeeded = false;
-        User userToUpdate = null;
+        Set<User> usersToUpdate = new HashSet<>();
 
         for (TaskLog taskLog : pendingLogs) {
             if (now.isAfter(taskLog.getSchedule().getEndTime())) {
@@ -52,10 +53,7 @@ public class TaskSchedulerService {
                 taskLog.setMissedAt(LocalDateTime.of(today, taskLog.getSchedule().getEndTime()));
                 taskLogRepository.save(taskLog);
 
-                streakUpdateNeeded = true;
-                if (userToUpdate == null) {
-                    userToUpdate = taskLog.getSchedule().getUser();
-                }
+                usersToUpdate.add(taskLog.getSchedule().getUser());
             }
         }
 
@@ -72,9 +70,9 @@ public class TaskSchedulerService {
             }
         }
 
-        // 3. Recalculate streak if any task was missed
-        if (streakUpdateNeeded && userToUpdate != null) {
-            streakService.recalculateAndSaveStreak(userToUpdate);
+        // 3. Recalculate streak for all users whose tasks were missed
+        for (User user : usersToUpdate) {
+            streakService.recalculateAndSaveStreak(user);
         }
     }
 }

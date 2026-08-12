@@ -5,6 +5,8 @@ import {
   Flame, Sun, Moon, LogOut, LayoutDashboard, Calendar, 
   BookOpen, Award, CheckSquare, BarChart2, User, Menu, X, PlusCircle
 } from 'lucide-react';
+import NotificationCenter from './NotificationCenter';
+import InstallAppPrompt from './InstallAppPrompt';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -100,6 +102,10 @@ const Navbar = () => {
               </div>
             )}
 
+            <InstallAppPrompt />
+
+            {user && <NotificationCenter />}
+
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -121,6 +127,10 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="flex lg:hidden items-center space-x-2">
+            <InstallAppPrompt />
+
+            {user && <NotificationCenter />}
+
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+import { REGISTER_SW } from './utils/notificationService';
 
 // Pages
 import Login from './pages/Login';
@@ -28,6 +29,9 @@ const AppLayout = ({ children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    REGISTER_SW();
+  }, []);
   return (
     <AuthProvider>
       <Router>

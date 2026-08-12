@@ -1,9 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { BookOpen, Save, Lock, AlertCircle, Sparkles, CheckCircle } from 'lucide-react';
+import { BookOpen, Save, Lock, AlertCircle, Sparkles, CheckCircle, Calendar, Download } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { downloadJournalPDF } from '../utils/pdfGenerator';
+import JournalCalendarModal from '../components/JournalCalendarModal';
+
+const formatLocalDate = (d = new Date()) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dayVal = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dayVal}`;
+};
 
 const JournalEditor = () => {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const { user } = useAuth();
+  const TodayDateStr = formatLocalDate();
+  const [date, setDate] = useState(TodayDateStr);
   const [content, setContent] = useState({
     contentWhatIDid: '',
     contentWhatILearned: '',
@@ -15,6 +27,7 @@ const JournalEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
   const [error, setError] = useState('');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const firstRender = useRef(true);
 
@@ -110,13 +123,31 @@ const JournalEditor = () => {
           </p>
         </div>
 
-        {/* Date Selector & Save indicator */}
-        <div className="flex items-center gap-3 self-start sm:self-center">
+        {/* Date Selector, History & Download PDF buttons */}
+        <div className="flex flex-wrap items-center gap-3 self-start sm:self-center">
+          <button
+            onClick={() => setIsCalendarOpen(true)}
+            className="px-3.5 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs rounded-xl border border-indigo-500/20 flex items-center gap-1.5 transition-colors"
+            title="View Journal History Calendar"
+          >
+            <Calendar className="w-4 h-4" />
+            History Calendar
+          </button>
+
+          <button
+            onClick={() => downloadJournalPDF({ ...content, date, locked }, user?.name || 'User')}
+            className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
+            title="Download this journal entry as PDF"
+          >
+            <Download className="w-4 h-4" />
+            Download PDF
+          </button>
+
           <input
             type="date"
             className="px-3.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             value={date}
-            max={new Date().toISOString().split('T')[0]}
+            max={TodayDateStr}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
@@ -184,6 +215,12 @@ const JournalEditor = () => {
           ))}
         </div>
       )}
+
+      <JournalCalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        userName={user?.name || 'User'}
+      />
     </div>
   );
 };

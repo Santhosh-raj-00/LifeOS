@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,7 +20,7 @@ public class ScheduleService {
 
     public Schedule createSchedule(Schedule schedule, User user) {
         schedule.setUser(user);
-        
+
         // Auto-fill repeat parameters depending on type if not set
         LocalDate date = schedule.getDate() != null ? schedule.getDate() : LocalDate.now();
         if (schedule.getRepeatType() == RepeatType.NONE) {
@@ -44,32 +45,32 @@ public class ScheduleService {
                 schedule.setMonth(date.getMonthValue());
             }
         }
-        
-        return scheduleRepository.save(schedule);
+
+        return scheduleRepository.save(Objects.requireNonNull(schedule, "schedule must not be null"));
     }
 
     public List<Schedule> getSchedulesByUser(Long userId) {
-        return scheduleRepository.findByUserId(userId);
+        return scheduleRepository.findByUserId(Objects.requireNonNull(userId, "userId must not be null"));
     }
 
     public Schedule getScheduleById(Long id) {
-        return scheduleRepository.findById(id)
+        return scheduleRepository.findById(Objects.requireNonNull(id, "id must not be null"))
                 .orElseThrow(() -> new IllegalArgumentException("Schedule not found"));
     }
 
     public void deleteSchedule(Long id, Long userId) {
-        Schedule schedule = getScheduleById(id);
-        if (!schedule.getUser().getId().equals(userId)) {
+        Schedule schedule = getScheduleById(Objects.requireNonNull(id, "id must not be null"));
+        if (!schedule.getUser().getId().equals(Objects.requireNonNull(userId, "userId must not be null"))) {
             throw new IllegalArgumentException("Unauthorized delete attempt");
         }
-        scheduleRepository.delete(schedule);
+        scheduleRepository.delete(Objects.requireNonNull(schedule, "schedule must not be null"));
     }
 
     public boolean appliesToDate(Schedule schedule, LocalDate date) {
         // A schedule cannot apply before it was created
-        LocalDate creationDate = schedule.getCreatedAt() != null ? 
-                schedule.getCreatedAt().toLocalDate() : LocalDate.now();
-        
+        LocalDate creationDate = schedule.getCreatedAt() != null ? schedule.getCreatedAt().toLocalDate()
+                : LocalDate.now();
+
         if (date.isBefore(creationDate)) {
             return false;
         }

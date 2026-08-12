@@ -38,6 +38,13 @@ const Stats = () => {
     color: '#f8fafc'
   };
 
+  const formatLocalDate = (d = new Date()) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayVal = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dayVal}`;
+  };
+
   // Habit Heatmap Generator helper
   const renderHeatmap = () => {
     if (!data || !data.habitHeatmap) return null;
@@ -50,7 +57,7 @@ const Stats = () => {
     for (let i = daysToShow - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(date);
       dates.push({
         dateStr,
         label: date.toLocaleDateString([], { month: 'short', day: 'numeric' }),

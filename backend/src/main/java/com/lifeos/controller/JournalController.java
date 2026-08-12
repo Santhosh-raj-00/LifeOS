@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,6 +30,13 @@ public class JournalController {
         return userRepository.findByEmail(username)
                 .or(() -> userRepository.findByPhone(username))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<JournalEntry>> getAllJournals() {
+        User user = getAuthenticatedUser();
+        List<JournalEntry> entries = journalService.getAllJournalEntries(user.getId());
+        return ResponseEntity.ok(entries);
     }
 
     @GetMapping

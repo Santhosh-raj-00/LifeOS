@@ -38,7 +38,7 @@ const Dashboard = () => {
       updateUser(profileResponse.data);
 
       // Compute statistics
-      const completed = taskList.filter(t => t.status === 'COMPLETED').size || taskList.filter(t => t.status === 'COMPLETED').length;
+      const completed = taskList.filter(t => t.status === 'COMPLETED').length;
       const missed = taskList.filter(t => t.status === 'MISSED').length;
       const pending = taskList.filter(t => t.status === 'PENDING').length;
       const total = taskList.length;

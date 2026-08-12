@@ -1,0 +1,30 @@
+{
+  "short_name": "LifeOS",
+  "name": "LifeOS – Personal Discipline & Accountability System",
+  "description": "Time-locked personal accountability tracker with schedule lock warnings and daily reflections.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0F172A",
+  "theme_color": "#4F46E5",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["lifestyle", "productivity", "utilities"]
+}

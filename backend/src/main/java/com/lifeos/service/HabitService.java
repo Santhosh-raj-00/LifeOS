@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -33,7 +34,7 @@ public class HabitService {
                 .currentStreak(0)
                 .bestStreak(0)
                 .build();
-        return habitRepository.save(habit);
+        return habitRepository.save(Objects.requireNonNull(habit));
     }
 
     public List<Habit> getHabitsByUser(Long userId) {
@@ -41,17 +42,17 @@ public class HabitService {
     }
 
     public void deleteHabit(Long id, Long userId) {
-        Habit habit = habitRepository.findById(id)
+        Habit habit = habitRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new IllegalArgumentException("Habit not found"));
         if (!habit.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("Unauthorized access");
         }
-        habitRepository.delete(habit);
+        habitRepository.delete(Objects.requireNonNull(habit));
     }
 
     @Transactional
     public HabitLog logHabit(Long habitId, LocalDate date, HabitLogStatus status, Long userId) {
-        Habit habit = habitRepository.findById(habitId)
+        Habit habit = habitRepository.findById(Objects.requireNonNull(habitId))
                 .orElseThrow(() -> new IllegalArgumentException("Habit not found"));
 
         if (!habit.getUser().getId().equals(userId)) {
@@ -60,9 +61,11 @@ public class HabitService {
 
         Optional<HabitLog> existingLogOpt = habitLogRepository.findByHabitIdAndDate(habitId, date);
         HabitLog log;
+        HabitLogStatus previousStatus = null;
 
         if (existingLogOpt.isPresent()) {
             log = existingLogOpt.get();
+            previousStatus = log.getStatus();
             log.setStatus(status);
         } else {
             log = HabitLog.builder()
@@ -72,13 +75,13 @@ public class HabitService {
                     .build();
         }
 
-        log = habitLogRepository.save(log);
+        log = habitLogRepository.save(Objects.requireNonNull(log));
 
         // Recalculate streak for this habit
         recalculateHabitStreak(habit);
 
-        // Award XP if completed
-        if (status == HabitLogStatus.COMPLETED) {
+        // Award XP only if transitioning into COMPLETED status for the first time
+        if (status == HabitLogStatus.COMPLETED && previousStatus != HabitLogStatus.COMPLETED) {
             streakService.addXp(habit.getUser(), 5); // +5 XP for habits
         }
 
@@ -99,7 +102,7 @@ public class HabitService {
                         .date(date)
                         .status(defaultStatus)
                         .build();
-                habitLogRepository.save(log);
+                habitLogRepository.save(Objects.requireNonNull(log));
             }
         }
         
@@ -150,9 +153,7 @@ public class HabitService {
     }
 
     public double calculateSuccessPercentage(Long habitId) {
-        List<HabitLog> logs = habitLogRepository.findAll().stream()
-                .filter(l -> l.getHabit().getId().equals(habitId))
-                .toList();
+        List<HabitLog> logs = habitLogRepository.findByHabitId(habitId);
 
         if (logs.isEmpty()) {
             return 0.0;

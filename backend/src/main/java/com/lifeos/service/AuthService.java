@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Service
 public class AuthService {
@@ -65,7 +66,7 @@ public class AuthService {
                 .lastActiveDate(LocalDate.now())
                 .build();
 
-        return userRepository.save(user);
+        return userRepository.save(Objects.requireNonNull(user));
     }
 
     public AuthResponse login(LoginRequest request) {

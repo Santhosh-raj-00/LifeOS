@@ -46,7 +46,7 @@ public class StatsService {
         }
 
         // Fetch user streaks
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Fetch task logs in range
@@ -61,7 +61,7 @@ public class StatsService {
 
         // Group history by date
         Map<LocalDate, List<TaskLog>> logsByDate = taskLogs.stream()
-                .collect(Collectors.groupingBy(TaskLog::getDate));
+                .collect(Collectors.groupingBy(log -> log.getDate()));
 
         List<Map<String, Object>> taskHistory = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");

@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long> {
     Optional<JournalEntry> findByUserIdAndDate(Long userId, LocalDate date);
     List<JournalEntry> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+    List<JournalEntry> findByUserIdOrderByDateDesc(Long userId);
 }

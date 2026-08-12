@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -15,6 +17,19 @@ public class JournalService {
 
     @Autowired
     private JournalEntryRepository journalEntryRepository;
+
+    public List<JournalEntry> getAllJournalEntries(Long userId) {
+        List<JournalEntry> entries = journalEntryRepository.findByUserIdOrderByDateDesc(userId);
+        LocalDate today = LocalDate.now();
+        // Automatically lock older entries
+        for (JournalEntry entry : entries) {
+            if (entry.getDate().isBefore(today) && !entry.isLocked()) {
+                entry.setLocked(true);
+                journalEntryRepository.save(entry);
+            }
+        }
+        return entries;
+    }
 
     public Optional<JournalEntry> getJournalEntry(Long userId, LocalDate date) {
         Optional<JournalEntry> entryOpt = journalEntryRepository.findByUserIdAndDate(userId, date);
@@ -70,6 +85,6 @@ public class JournalService {
                     .build();
         }
 
-        return journalEntryRepository.save(entry);
+        return journalEntryRepository.save(Objects.requireNonNull(entry));
     }
 }

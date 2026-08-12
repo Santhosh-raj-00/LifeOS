@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class StreakService {
@@ -63,78 +64,60 @@ public class StreakService {
 
     @Transactional
     public void recalculateAndSaveStreak(User user) {
-        // Let's analyze logs grouped by date
-        // Find date range
         LocalDate today = LocalDate.now();
         int streak = 0;
-        
-        // We will traverse backwards starting from today/yesterday
+        int consecutiveEmptyDays = 0;
         LocalDate checkDate = today;
         
-        // If today has any missed tasks, streak is reset for today (it can still be evaluated starting yesterday)
-        // Let's check yesterday first. If yesterday was a success, check the day before, etc.
-        // What is a successful day? A day where:
-        // 1. There is at least 1 task log
-        // 2. All task logs are COMPLETED (0 PENDING, 0 MISSED, 0 LOCKED with status MISSED)
-        
-        // Let's implement a simple date iteration:
-        checkDate = today;
-        
-        // We will fetch task logs for specific days backwards
         while (true) {
             List<TaskLog> logsForDay = taskLogRepository.findByScheduleUserIdAndDate(user.getId(), checkDate);
+            
             if (logsForDay.isEmpty()) {
-                // If it is today and they haven't scheduled anything, skip and look at yesterday
                 if (checkDate.equals(today)) {
+                    // Today has no scheduled tasks; skip to yesterday without breaking
                     checkDate = checkDate.minusDays(1);
                     continue;
                 } else {
-                    // No tasks scheduled in a past day doesn't break the streak unless they skipped many days.
-                    // But to be simple and standard: if we find a gap with zero tasks, we stop if it is past yesterday.
-                    if (checkDate.isBefore(today.minusDays(3))) {
-                        // Allow up to 3 days of gap (rest days) without breaking the streak
-                        checkDate = checkDate.minusDays(1);
-                        continue;
-                    } else {
+                    consecutiveEmptyDays++;
+                    if (consecutiveEmptyDays > 3) {
+                        // More than 3 consecutive days without scheduled tasks breaks the streak
                         break;
                     }
+                    checkDate = checkDate.minusDays(1);
+                    continue;
                 }
             }
             
+            // Non-empty day resets consecutive empty day count
+            consecutiveEmptyDays = 0;
+
             boolean allCompleted = true;
             boolean hasCompleted = false;
             for (TaskLog log : logsForDay) {
                 if (log.getStatus() == TaskStatus.COMPLETED) {
                     hasCompleted = true;
                 } else {
-                    // If it is today, PENDING doesn't break the streak yet, but it means today is not yet "100% completed"
-                    if (checkDate.equals(today)) {
-                        allCompleted = false;
-                    } else {
-                        // If it's a past day, PENDING or MISSED breaks it
-                        allCompleted = false;
-                    }
+                    allCompleted = false;
                 }
             }
             
             if (checkDate.equals(today)) {
                 if (hasCompleted && allCompleted) {
                     streak++;
-                } else {
-                    // Today is still in progress, so it doesn't break the streak of yesterday. We don't increment, but we keep going.
                 }
+                // If today is in progress or not 100% complete, it does not count as a completed day yet, but does not break yesterday's streak.
             } else {
                 if (hasCompleted && allCompleted) {
                     streak++;
                 } else {
-                    // Yesterday or a past day was not completed -> streak breaks
+                    // A past day with uncompleted or missed tasks breaks the streak
                     break;
                 }
             }
             
             checkDate = checkDate.minusDays(1);
             
-            // Limit loop safety
+            // Safety limit (1 year)
             if (checkDate.isBefore(today.minusDays(366))) {
                 break;
             }
@@ -165,7 +148,7 @@ public class StreakService {
 
     private void checkTaskCountAchievements(User user) {
         // Get total completed tasks
-        List<TaskLog> logs = taskLogRepository.findByScheduleUserIdAndDateBetween(user.getId(), LocalDate.now().minusYears(5), LocalDate.now().plusDays(1));
+        List<TaskLog> logs = taskLogRepository.findByScheduleUserIdAndDateBetween(user.getId(), LocalDate.of(2020, 1, 1), LocalDate.now().plusDays(1));
         long completedCount = logs.stream()
                 .filter(l -> l.getStatus() == TaskStatus.COMPLETED)
                 .count();
@@ -183,7 +166,7 @@ public class StreakService {
                     .description(description)
                     .unlockedAt(LocalDateTime.now())
                     .build();
-            achievementRepository.save(achievement);
+            achievementRepository.save(Objects.requireNonNull(achievement));
             
             // Bonus XP for achievement unlock
             addXp(user, 50);
