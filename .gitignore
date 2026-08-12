@@ -30,6 +30,12 @@ frontend/*.local
 # Local Maven installation directory
 apache-maven-*/
 
+# Database data files
+data/
+backend/data/
+*.db
+*.mv.db
+
 # Local env files
 .env
 .env.local
