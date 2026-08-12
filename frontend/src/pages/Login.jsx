@@ -24,24 +24,28 @@ const Login = () => {
         username,
         password,
         rememberMe
-      });
+      }, { timeout: 20000 });
       login(response.data);
       navigate('/');
     } catch (err) {
       console.error('Login error details:', err);
-      const serverMessage = err.response?.data;
-      if (serverMessage) {
-        if (typeof serverMessage === 'string') {
-          setError(serverMessage);
-        } else if (serverMessage.message) {
-          setError(serverMessage.message);
-        } else {
-          setError(JSON.stringify(serverMessage));
-        }
-      } else if (err.message) {
-        setError(err.message);
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('Backend server is waking up on Render (free tier cold start). Please wait 10 seconds and try again!');
       } else {
-        setError('Invalid login credentials.');
+        const serverMessage = err.response?.data;
+        if (serverMessage) {
+          if (typeof serverMessage === 'string') {
+            setError(serverMessage);
+          } else if (serverMessage.message) {
+            setError(serverMessage.message);
+          } else {
+            setError(JSON.stringify(serverMessage));
+          }
+        } else if (err.message) {
+          setError(err.message);
+        } else {
+          setError('Invalid login credentials.');
+        }
       }
     } finally {
       setLoading(false);

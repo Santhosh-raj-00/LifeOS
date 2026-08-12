@@ -46,7 +46,7 @@ const Register = () => {
         phone: phone.trim() || null,
         password,
         confirmPassword
-      });
+      }, { timeout: 20000 });
 
       setSuccess('Registration successful! Redirecting to login page...');
       setTimeout(() => {
@@ -54,19 +54,23 @@ const Register = () => {
       }, 2000);
     } catch (err) {
       console.error('Registration error details:', err);
-      const serverMessage = err.response?.data;
-      if (serverMessage) {
-        if (typeof serverMessage === 'string') {
-          setError(serverMessage);
-        } else if (serverMessage.message) {
-          setError(serverMessage.message);
-        } else {
-          setError(JSON.stringify(serverMessage));
-        }
-      } else if (err.message) {
-        setError(err.message);
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('Backend server is waking up on Render. Please wait 10 seconds and try again!');
       } else {
-        setError('An error occurred during registration.');
+        const serverMessage = err.response?.data;
+        if (serverMessage) {
+          if (typeof serverMessage === 'string') {
+            setError(serverMessage);
+          } else if (serverMessage.message) {
+            setError(serverMessage.message);
+          } else {
+            setError(JSON.stringify(serverMessage));
+          }
+        } else if (err.message) {
+          setError(err.message);
+        } else {
+          setError('An error occurred during registration.');
+        }
       }
     } finally {
       setLoading(false);
