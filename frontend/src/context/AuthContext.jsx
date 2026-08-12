@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Configure default Axios baseURL
-    axios.defaults.baseURL = 'http://localhost:8085';
+    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8085';
 
     // Set axios auth header interceptor
     const requestInterceptor = axios.interceptors.request.use(
